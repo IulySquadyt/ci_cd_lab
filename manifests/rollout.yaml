@@ -2,16 +2,16 @@ apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
   name: go-simple-webserver
-  labels:
-    app: go-simple-webserver
 spec:
   replicas: 10
   strategy:
     canary:
       steps:
-      - setWeight: 50        # Shift 50% of traffic to the new version
-      - pause: { duration: 60s } # Wait 60 seconds for observation
-      - setWeight: 100       # Shift remaining traffic to the new version
+      - setWeight: 25
+      - pause: {duration: 120s}
+      - setWeight: 75
+      - pause: {duration: 120s}
+      - setWeight: 100
   selector:
     matchLabels:
       app: go-simple-webserver
@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: webserver
-        image: ghcr.io/iulysquadyt/ci_cd_lab:latest
+        image: ghcr.io/iulysquadyt/ci_cd_lab@sha256:d5cfc638215742bf66f1955abf47e7116c35618a653cb4b714ec6eefca466181
         ports:
         - containerPort: 8080
         imagePullPolicy: Always
