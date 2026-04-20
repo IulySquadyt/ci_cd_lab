@@ -1,76 +1,67 @@
 name: Build CI/CD
 
-# Trigger the workflow on a commit push to the main branch
 on:
   push:
     branches:
-      - [cite_start]main [cite: 74, 75, 76, 77]
+      - main
 
 jobs:
-  # Job 1: Run automated tests
   test:
-    [cite_start]runs-on: ubuntu-latest [cite: 170]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        [cite_start]uses: actions/checkout@v4 [cite: 171, 172]
+        uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          [cite_start]go-version: '1.22' [cite: 173, 174, 176]
+          go-version: '1.22'
 
       - name: Install dependencies
-        [cite_start]run: go mod download [cite: 177, 178]
+        run: go mod download
 
-      # Exercise Solution: Run tests first
       - name: Run tests
-        [cite_start]run: go test ./... [cite: 158, 180, 181]
+        run: go test ./...
 
-  # Job 2: Compile the application
   compile:
-    [cite_start]runs-on: ubuntu-latest [cite: 82]
-    # Ensure test job runs before compile
-    [cite_start]needs: test [cite: 159, 160, 184]
+    runs-on: ubuntu-latest
+    needs: test
     steps:
       - name: Checkout code
-        [cite_start]uses: actions/checkout@v4 [cite: 84, 85]
+        uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          [cite_start]go-version: '1.22' [cite: 87, 88, 90]
+          go-version: '1.22'
 
       - name: Install dependencies
-        [cite_start]run: go mod download [cite: 92, 93]
+        run: go mod download
 
       - name: Compile binary
-        [cite_start]run: go build -o myapp [cite: 95, 96]
+        run: go build -o myapp
 
-  # Job 3: Build and push Docker image
   build:
-    [cite_start]runs-on: ubuntu-latest [cite: 190]
-    # Grant permissions to write to GitHub Container Registry
+    runs-on: ubuntu-latest
     permissions:
-      [cite_start]contents: write [cite: 194]
-      [cite_start]packages: write [cite: 195]
-    # Run only after compile succeeds
-    [cite_start]needs: compile [cite: 197]
-    [cite_start]if: success() [cite: 198]
+      contents: write
+      packages: write
+    needs: compile
+    if: success()
     steps:
       - name: Checkout code
-        [cite_start]uses: actions/checkout@v4 [cite: 205, 206]
+        uses: actions/checkout@v4
 
       - name: Log in to GHCR
-        [cite_start]uses: docker/login-action@v3 [cite: 214, 215]
+        uses: docker/login-action@v3
         with:
-          [cite_start]registry: ghcr.io [cite: 217]
-          [cite_start]username: ${{ github.actor }} [cite: 218]
-          [cite_start]password: ${{ secrets.GITHUB_TOKEN }} [cite: 221]
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker image
-        # Hardcoded lowercase username to avoid build failure
-        [cite_start]run: docker build -t ghcr.io/iulysquadyt/ci_cd_lab:latest . [cite: 226, 231, 233]
+        # Lowercase username applied: iulysquadyt
+        run: docker build -t ghcr.io/iulysquadyt/ci_cd_lab:latest .
 
       - name: Push Docker image
-        # Hardcoded lowercase username to avoid build failure
-        [cite_start]run: docker push ghcr.io/iulysquadyt/ci_cd_lab:latest [cite: 228, 231, 233]
+        run: docker push ghcr.io/iulysquadyt/ci_cd_lab:latest
