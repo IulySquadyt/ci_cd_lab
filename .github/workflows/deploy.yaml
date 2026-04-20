@@ -1,24 +1,22 @@
 name: Build CI/CD
 
-# Trigger the workflow on a commit push to the `main` branch
+# Trigger the workflow on a commit push to the main branch
 on:
-  # Trigger the workflow on a commit push to the `main` branch
   push:
     branches:
       - main
 
 jobs:
-  # Job to compile the application
-  compile:
-    # Specify the Os for the runner (container)
-    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
-
+  # Job 1: Run automated tests
+  test:
+    # Specify the OS for the runner
+    runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the repository code into the runner
+      # Step 1: Checkout the repository code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Set up Go environment with version 1.22
+      # Step 2: Set up Go environment (Go 1.22)
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -28,6 +26,27 @@ jobs:
       - name: Install dependencies
         run: go mod download
 
-      # Step 4: Compile the Go application into a binary named 'myapp'
+      # Step 4: Run Go tests
+      - name: Run tests
+        run: go test ./...
+
+  # Job 2: Compile the application
+  compile:
+    runs-on: ubuntu-latest
+    # Make sure that the test job is run before compile
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install dependencies
+        run: go mod download
+
+      # Compile the Go application into a binary named 'myapp'
       - name: Compile binary
         run: go build -o myapp
