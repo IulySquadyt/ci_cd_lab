@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: webserver
-        image: ghcr.io/iulysquadyt/ci_cd_lab:latest
+        image: ghcr.io/iulysquadyt/ci_cd_lab@sha256:d32a66ba13cb2b6dcbd4c089175f024327209e2f853e686ca777f54b5299a811
         ports:
         - containerPort: 8080
         imagePullPolicy: Always
