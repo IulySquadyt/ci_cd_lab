@@ -1,52 +1,64 @@
 name: Build CI/CD
 
-# Trigger the workflow on a commit push to the main branch
 on:
   push:
     branches:
       - main
 
 jobs:
-  # Job 1: Run automated tests
   test:
-    # Specify the OS for the runner
     runs-on: ubuntu-latest
     steps:
-      # Step 1: Checkout the repository code
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # Step 2: Set up Go environment (Go 1.22)
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-
-      # Step 3: Download Go module dependencies
       - name: Install dependencies
         run: go mod download
-
-      # Step 4: Run Go tests
       - name: Run tests
         run: go test ./...
 
-  # Job 2: Compile the application
   compile:
     runs-on: ubuntu-latest
-    # Make sure that the test job is run before compile
     needs: test
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.22'
-
       - name: Install dependencies
         run: go mod download
-
-      # Compile the Go application into a binary named 'myapp'
       - name: Compile binary
         run: go build -o myapp
+
+  build:
+    runs-on: ubuntu-latest
+    # Grant write permissions to GHCR [cite: 191, 193, 195]
+    permissions:
+      contents: write
+      packages: write
+    # Run only after 'compile' finishes successfully [cite: 196, 197, 198]
+    needs: compile
+    if: success()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Docker image
+        # If your username has uppercase letters, replace ${{ github.repository }} 
+        # with a lowercase string (e.g., ghcr.io/johndoe/ci_cd_lab:latest) 
+        run: docker build -t ghcr.io/${{ github.repository }}:latest .
+
+      - name: Push Docker image
+        run: docker push ghcr.io/${{ github.repository }}:latest
