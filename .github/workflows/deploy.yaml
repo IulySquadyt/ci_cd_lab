@@ -35,13 +35,11 @@ jobs:
       - name: Compile binary
         run: go build -o myapp
 
-  build:
+   build:
     runs-on: ubuntu-latest
-    # Grant write permissions to GHCR [cite: 191, 193, 195]
     permissions:
       contents: write
       packages: write
-    # Run only after 'compile' finishes successfully [cite: 196, 197, 198]
     needs: compile
     if: success()
     steps:
@@ -56,9 +54,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Docker image
-        # If your username has uppercase letters, replace ${{ github.repository }} 
-        # with a lowercase string (e.g., ghcr.io/johndoe/ci_cd_lab:latest) 
-        run: docker build -t ghcr.io/${{ github.repository }}:latest .
+        run: docker build -t ghcr.io/iulysquadyt/ci_cd_lab:latest .
 
       - name: Push Docker image
-        run: docker push ghcr.io/${{ github.repository }}:latest
+        run: docker push ghcr.io/iulysquadyt/ci_cd_lab:latest
